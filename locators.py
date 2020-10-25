@@ -22,22 +22,8 @@ class ProductPageLocators():
 
 
 class BasketPageLocators():
+    
+    Empty_basket_text = "Корзина пуста"
+
     DELETE_BUTTONS = (By.CSS_SELECTOR, "button.btn.btn-outline-danger") # Кнопки удалить в корзине
-
-
-    
-    
-    
-    
-    
-    
-    LOGIN_LINK = (By.CSS_SELECTOR, "#login_link")
-    LOGIN_LINK_INVALID = (By.CSS_SELECTOR, "#login_link_inc")
-
-    EMPTY_BASKET_TAG = (By.CSS_SELECTOR, "#content_inner > p")
-    NOT_EMPTY_BASKET_TAG = (By.CSS_SELECTOR, ".basket-items")
-    USER_ICON = (By.CSS_SELECTOR, ".icon-user")
-    
-
-
-
+    EMPTY_BASKET_TAG = (By.CSS_SELECTOR, "div.alert-info")

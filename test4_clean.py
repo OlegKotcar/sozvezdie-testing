@@ -145,8 +145,9 @@ class TestBasketPage(object):
 
     @pytest.fixture(scope="function", autouse=True) # scope="class" "function"
     def setup(self, browser, link):
-        page = BasePage(browser, link)
-        page.open()
+        browser.implicitly_wait(10)
+        #page = BasePage(browser, link)
+        #page.open()
         
         # Проверим суммы в корзине
     
@@ -181,6 +182,8 @@ class TestBasketPage(object):
 #-----------------------------------------in review
         page = BasePage(browser, link)
         page.open()
+        
+        
         lst=[]
         contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)
         
@@ -199,18 +202,14 @@ class TestBasketPage(object):
 
             totalprice+=int(price)
             #print(price)
-        print("Total price = ",totalprice)
+        #print("Total price = ",totalprice)
       
         # проматываем до таблицы с ценами 
         scroll_to_object(*ProductPageLocators.PRICE_TABLE)         
         
         # Нажимаем все кнопки купить
         click_all_buttons(*ProductPageLocators.BUY_BUTTONS)
-        #click_all_buttons("button.btn") 
-      
-      
-      
-      
+
         # Открываем корзину и ищем суммы там
         browser.get(cartlink)         
      
@@ -227,38 +226,51 @@ class TestBasketPage(object):
             totalpriceinbasket+=int(price)
             #print(price)
  
-        print("Total price in basket = ",totalpriceinbasket)
+        #print("Total price in basket = ",totalpriceinbasket)
         assert totalprice == totalpriceinbasket, "Цены добавленных туров и цены в корзине не совпадают"
         
         # нажимаем все кнопки удалить в корзине
         click_all_buttons(*BasketPageLocators.DELETE_BUTTONS)
         
-        time.sleep(10)
+        # проверяем что корзина пуста
+        Empty_basket_tag = browser.find_elements(*BasketPageLocators.EMPTY_BASKET_TAG)  
+        # review  - надо делать поддержку разных языков для текста пустой корзины, пока так.
+        
+        assert BasketPageLocators.Empty_basket_text in Empty_basket_tag[0].text
+        
+        
+        
+        #time.sleep(30)
         
         
 
 ####  Повторяем покупку
 
-   
-        browser.implicitly_wait(10)
-
 # нажимаем назад
         browser.back()
    
+         
+        time.sleep(10)
+   
+   
+   
+   
         # проматываем до таблицы с ценами 
-        scroll_to_object(*ProductPageLocators.PRICE_TABLE)   
+        
+        
+        ###########scroll_to_object(*ProductPageLocators.PRICE_TABLE)   
 
         # Нажимаем все кнопки купить
        
         click_all_buttons(*ProductPageLocators.BUY_BUTTONS)
-#        time.sleep(10) 
+        #time.sleep(10) 
 
         #пробуем нажать на линк корзины после покупки
         
         buttonlink = browser.find_element(*ProductPageLocators.BASKET_LINK_ON_PAGE)
         buttonlink.click()
 
-        time.sleep(40)
+        time.sleep(10)
 
 
 
