@@ -6,6 +6,11 @@ from datetime import datetime
 from selenium.webdriver import Remote as RemoteWebDriver
 from selenium.webdriver.support import expected_conditions as EC
 
+# Import locators
+from locators import BasketPageLocators
+from locators import CatalogPageLocators
+from locators import ProductPageLocators
+
 
 import time, pytest, urllib, requests
 
@@ -67,7 +72,9 @@ class TestCatalogPage(object):
     @pytest.mark.skip    
     def test_catalog_product_url_opens(self, browser, cataloglink):  # проверям, что все ссылки на продукты со стр. каталога доступны
         producturls=[]
-        productlinks = browser.find_elements_by_css_selector(".catalog.card-deck a")
+        
+        productlinks = browser.find_elements(*CatalogPageLocators.PRODUCT_DECK) 
+      
         for link in productlinks:
             producturls.append(link.get_attribute("href"))
         for counter, url in enumerate(producturls):
@@ -82,7 +89,7 @@ class TestCatalogPage(object):
     @pytest.mark.skip     
     def test_catalog_product_title_exists (self, browser, cataloglink):  # проверям, что все ссылки на продукты со стр. каталога доступны
         producturls=[]
-        productlinks = browser.find_elements_by_css_selector(".catalog.card-deck a")
+        productlinks = browser.find_elements(*CatalogPageLocators.PRODUCT_DECK)
         for link in productlinks:
             producturls.append(link.get_attribute("href"))
         for url in producturls:
@@ -97,7 +104,7 @@ class TestCatalogPage(object):
             browser.implicitly_wait(10)
             browser.get(url) 
 
-            title = browser.find_element_by_css_selector("#page-content div h1").text # Ищем заголовок
+            title = browser.find_element(*ProductPageLocators.PRODUCT_TITLE).text # Ищем заголовок
             print(title)
             if  "404" in title:
                 print(f"Страница продукта {url} с наименованием {title} не отображает карточку продукта")
@@ -107,7 +114,10 @@ class TestCatalogPage(object):
     @pytest.mark.skip    
     def test_catalog_image_files_opens(self, browser, cataloglink):    
         # Проверям что картинки загружаются
-        url_imgs = browser.find_elements_by_css_selector("div.catalog.card-deck img")
+        
+        
+        
+        url_imgs = browser.find_elements(*CatalogPageLocators.PRODUCT_IMAGE_URL)
         assert len(url_imgs) != 0, "Нет ссылок на фото в каталоге!"        
         for link in url_imgs:
             imagelink = link.get_attribute("src")
@@ -119,7 +129,7 @@ class TestCatalogPage(object):
 
     @pytest.mark.skip
     def test_catalog_photo_duplication(self, browser, cataloglink):    
-        url_imgs = browser.find_elements_by_css_selector("div.catalog.card-deck img")
+        url_imgs = browser.find_elements(*CatalogPageLocators.PRODUCT_IMAGE_URL)
         catduplications=[]
         for link in url_imgs:
             imagelink = link.get_attribute("src")
@@ -139,17 +149,26 @@ class TestBasketPage(object):
         page.open()
         
         # Проверим суммы в корзине
+    
     #@pytest.mark.skip 
     
     def test_calc_in_basket(self, browser, link): 
-        def click_all_buttons(css_selector):
-            assert page.is_element_present(By.CSS_SELECTOR, css_selector), f"Кнопок c CSS,{css_selector} нет"    
-            buttons = browser.find_elements_by_css_selector(css_selector)        
+        #def click_all_buttons(css_selector):
+        #    assert page.is_element_present(By.CSS_SELECTOR, css_selector), f"Кнопок c CSS,{css_selector} нет"    
+        #    buttons = browser.find_elements_by_css_selector(css_selector)        
+        #    for button in buttons:
+        #        button.click()    
+        #        #time.sleep(5)
+                
+        def click_all_buttons(how, what):
+            assert page.is_element_present(how, what), f"Кнопок в {how}, со значением {what} нет"    
+            buttons = browser.find_elements(how, what)        
             for button in buttons:
                 button.click()    
-                #time.sleep(5)
-        def scroll_to_object(css_selector):
-            scroll_object = browser.find_element_by_css_selector(css_selector)
+                #time.sleep(5)        
+        def scroll_to_object(how, what):
+            assert page.is_element_present(how, what), f"Элемент {how}, со значением {what} не найден"
+            scroll_object = browser.find_element(how, what)
             scroll_object.location_once_scrolled_into_view
         def substract_digits_to_string(rawstring):
             digit_list = re.findall(r'[0-9]+', rawstring)
@@ -163,7 +182,7 @@ class TestBasketPage(object):
         page = BasePage(browser, link)
         page.open()
         lst=[]
-        contents = browser.find_elements_by_css_selector("tr td")
+        contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)
         
         # Заготовка массива чтобы проверить даты и суммы
         for t in contents:
@@ -183,19 +202,21 @@ class TestBasketPage(object):
         print("Total price = ",totalprice)
       
         # проматываем до таблицы с ценами 
-        scroll_to_object(".table.price-table")       
+        scroll_to_object(*ProductPageLocators.PRICE_TABLE)         
         
         # Нажимаем все кнопки купить
-        click_all_buttons("button.btn") 
+        click_all_buttons(*ProductPageLocators.BUY_BUTTONS)
+        #click_all_buttons("button.btn") 
+      
+      
+      
       
         # Открываем корзину и ищем суммы там
         browser.get(cartlink)         
-        
-       
-        lst=[]
-        contents = browser.find_elements_by_css_selector("tr td")
-        # Заготовка массива чтобы проверить суммы
-        for t in contents:
+     
+        lst=[]  # Инициализируем список
+        contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)
+        for t in contents:        # Заготовка массива чтобы проверить суммы
             lst.append(t.text)
         
         totalpriceinbasket=0
@@ -209,30 +230,32 @@ class TestBasketPage(object):
         print("Total price in basket = ",totalpriceinbasket)
         assert totalprice == totalpriceinbasket, "Цены добавленных туров и цены в корзине не совпадают"
         
-        # нажимаем все кнопки удалить
-        click_all_buttons("button.btn.btn-outline-danger") 
+        # нажимаем все кнопки удалить в корзине
+        click_all_buttons(*BasketPageLocators.DELETE_BUTTONS)
+        
+        time.sleep(10)
+        
         
 
 ####  Повторяем покупку
 
-##  ---- нажимаем назад
-        
+   
         browser.implicitly_wait(10)
 
 # нажимаем назад
         browser.back()
    
         # проматываем до таблицы с ценами 
-        scroll_to_object(".table.price-table")   
+        scroll_to_object(*ProductPageLocators.PRICE_TABLE)   
 
         # Нажимаем все кнопки купить
        
-        click_all_buttons("button.btn") 
+        click_all_buttons(*ProductPageLocators.BUY_BUTTONS)
 #        time.sleep(10) 
 
-        #пробуем нажать на линк корзины
+        #пробуем нажать на линк корзины после покупки
         
-        buttonlink = browser.find_element_by_css_selector("td a")
+        buttonlink = browser.find_element(*ProductPageLocators.BASKET_LINK_ON_PAGE)
         buttonlink.click()
 
         time.sleep(40)
@@ -265,8 +288,8 @@ class TestProductPage(object):
         lst=[]        
         page = BasePage(browser, link)
         page.open()
-        assert page.is_element_present(By.CSS_SELECTOR, "h1"), "Заголовок не найден"
-        contents = browser.find_elements_by_css_selector("tr td")
+        assert page.is_element_present(*ProductPageLocators.PRODUCT_TITLE), "Заголовок продукта не найден"
+        contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)
            
         # Заготовка массива чтобы проверить даты и суммы
         for t in contents:
@@ -284,7 +307,7 @@ class TestProductPage(object):
     def test_check_photoalbum_load_images(self, browser, link):    
      
         # Проверям что картинки (превью) загружаются
-        url_img = browser.find_element_by_css_selector("div>img.photo-card").get_attribute("src")
+        url_img = browser.find_element(*ProductPageLocators.PRODUCT_THUMBNAIL).get_attribute("src")
         #print(url_img)
         r = requests.get(url_img)
         assert r.status_code == 200, f"Неверная ссылка на изображение{url_img}"
@@ -295,7 +318,7 @@ class TestProductPage(object):
         # Проверям что картинки загружаются
         ##url_imgs = WebDriverWait(browser, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.react-photo-gallery--gallery img")))
         
-        url_imgs = browser.find_elements_by_css_selector("div.react-photo-gallery--gallery img")
+        url_imgs = browser.find_elements(*ProductPageLocators.PHOTO_GALLERY)
         
         assert len(url_imgs) != 0, f"Нет фотоальбома или фотографий в фотоальбоме, {browser.current_url}"        
         
@@ -307,9 +330,9 @@ class TestProductPage(object):
    
     @pytest.mark.skip
     def test_photoalbum_photo_files_duplication(self, browser, link):    
-        url_imgs = browser.find_elements_by_css_selector("div.react-photo-gallery--gallery img")
+        url_imgs = browser.find_elements(*ProductPageLocators.PHOTO_GALLERY)
         assert len(url_imgs) != 0, f"Нет фотоальбома или фотографий в фотоальбоме, {browser.current_url}"        
-        route = browser.find_element_by_xpath("//div[@class='text-center']/p")
+        route = browser.find_element(*ProductPageLocators.ROUTE)
         route_list=route.text.replace(" ", "").split("-")
 
         for link in url_imgs:
