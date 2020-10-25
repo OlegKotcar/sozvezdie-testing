@@ -140,7 +140,7 @@ class TestCatalogPage(object):
 
 #@pytest.mark.parametrize('link', [f"{product_base_link}/{no}" for no in range(100)])
 
-@pytest.mark.parametrize('link', ["http://185.10.185.115:7777/tour/3"])
+@pytest.mark.parametrize('link', ["http://185.10.185.115:7777/tour/0"])
 class TestBasketPage(object):
 
     @pytest.fixture(scope="function", autouse=True) # scope="class" "function"
@@ -175,9 +175,10 @@ class TestBasketPage(object):
             digit_list = re.findall(r'[0-9]+', rawstring)
             result = ""
             return (result.join(digit_list))
-            
-        
-        
+        def substract_float_digits_to_string(rawstring):
+            digit_list = re.findall(r'[0-9.,]+', rawstring)
+            result = ""
+            return (result.join(digit_list))
 
 #-----------------------------------------in review
         page = BasePage(browser, link)
@@ -195,12 +196,11 @@ class TestBasketPage(object):
             #print (f"Price before clean {lst[i]}")
             #price = re.sub("\D", "", lst[i]) #Выдается предупреждение Deprecation Warning
           
-            price = substract_digits_to_string(lst[i])
+            price = substract_float_digits_to_string(lst[i]).replace(",",".")
             
-            #price = list_to_string(re.findall(r'[0-9]+', lst[i]))
             #print (f"Price after clean {price}")
 
-            totalprice+=int(price)
+            totalprice+=float(price)
             #print(price)
         #print("Total price = ",totalprice)
       
@@ -211,7 +211,13 @@ class TestBasketPage(object):
         click_all_buttons(*ProductPageLocators.BUY_BUTTONS)
 
         # Открываем корзину и ищем суммы там
-        browser.get(cartlink)         
+
+#----------------------- пробуем открыть по нажатию        
+        buttonlink = browser.find_element(*ProductPageLocators.BASKET_LINK_ON_PAGE)
+        buttonlink.click()        
+        
+        
+        #browser.get(cartlink)         
      
         lst=[]  # Инициализируем список
         contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)
@@ -222,12 +228,12 @@ class TestBasketPage(object):
         # Суммируем цены в корзине
         for i in range(3, len(lst), 5) :
             #price = re.sub("\D", "", lst[i])  #Выдается предупреждение Deprecation Warning
-            price = substract_digits_to_string(lst[i])
-            totalpriceinbasket+=int(price)
+            price = substract_float_digits_to_string(lst[i]).replace(",",".")
+            totalpriceinbasket+=float(price)
             #print(price)
  
         #print("Total price in basket = ",totalpriceinbasket)
-        assert totalprice == totalpriceinbasket, "Цены добавленных туров и цены в корзине не совпадают"
+        assert round(totalprice,2) == round(totalpriceinbasket,2), "Цены добавленных туров и цены в корзине не совпадают"
         
         # нажимаем все кнопки удалить в корзине
         click_all_buttons(*BasketPageLocators.DELETE_BUTTONS)
@@ -235,42 +241,40 @@ class TestBasketPage(object):
         # проверяем что корзина пуста
         Empty_basket_tag = browser.find_elements(*BasketPageLocators.EMPTY_BASKET_TAG)  
         # review  - надо делать поддержку разных языков для текста пустой корзины, пока так.
-        
         assert BasketPageLocators.Empty_basket_text in Empty_basket_tag[0].text
         
-        
-        
-        #time.sleep(30)
-        
-        
-
-####  Повторяем покупку
+####  Повторяем покупку чтобы сработал расчет
 
 # нажимаем назад
         browser.back()
-   
-         
-        time.sleep(10)
-   
-   
-   
-   
+
         # проматываем до таблицы с ценами 
-        
-        
-        ###########scroll_to_object(*ProductPageLocators.PRICE_TABLE)   
+        scroll_to_object(*ProductPageLocators.PRICE_TABLE)   
 
         # Нажимаем все кнопки купить
-       
         click_all_buttons(*ProductPageLocators.BUY_BUTTONS)
-        #time.sleep(10) 
 
         #пробуем нажать на линк корзины после покупки
-        
         buttonlink = browser.find_element(*ProductPageLocators.BASKET_LINK_ON_PAGE)
         buttonlink.click()
+        
+        discount_and_total_price_from_basket = browser.find_elements(*BasketPageLocators.DISCOUNT_AND_PRICE)
+        lst=[]
+        for t in discount_and_total_price_from_basket:        # Заготовка массива чтобы проверить расчет
+            lst.append((t.text).replace(",","."))
+            
+        discount=float(substract_float_digits_to_string(lst[0])) # Размер скидки на странице
+      
+        resultt = float(substract_float_digits_to_string(lst[1]))
+        totalpricewithdiscount = substract_float_digits_to_string(lst[1]) # Значение Итого на странице продукта
 
-        time.sleep(10)
+        calculatedpricewithdiscount = round(totalpriceinbasket - totalpriceinbasket*discount/100, 2) #округляем рез-т до 2 знака
+    
+        assert calculatedpricewithdiscount == totalpricewithdiscount, f"Общая стоимость добавленных туров = {totalpriceinbasket} скидка = {discount} Итого должно быть = {calculatedpricewithdiscount}, а на странице {totalpricewithdiscount}"
+        #print(f"Общая стоимость добавленных туров = {totalpriceinbasket} скидка = {discount}% Итого должно быть = {calculatedpricewithdiscount}, а на странице {totalpricewithdiscount}")
+
+
+        #time.sleep(15)
 
 
 

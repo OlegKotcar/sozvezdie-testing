@@ -22,8 +22,7 @@ class ProductPageLocators():
 
 
 class BasketPageLocators():
-    
     Empty_basket_text = "Корзина пуста"
-
     DELETE_BUTTONS = (By.CSS_SELECTOR, "button.btn.btn-outline-danger") # Кнопки удалить в корзине
-    EMPTY_BASKET_TAG = (By.CSS_SELECTOR, "div.alert-info")
+    EMPTY_BASKET_TAG = (By.CSS_SELECTOR, "div.alert-info") # Сообщение о пустой корзине
+    DISCOUNT_AND_PRICE = (By.CSS_SELECTOR, "tfoot tr td")
