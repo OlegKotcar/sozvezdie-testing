@@ -264,9 +264,12 @@ class TestBasketPage(object):
             lst.append((t.text).replace(",","."))
             
         discount=float(substract_float_digits_to_string(lst[0])) # Размер скидки на странице
-      
+        
+        # Проверка, что дискоунт =11,5, так и есть
+        #discount=11.5
+        
         resultt = float(substract_float_digits_to_string(lst[1]))
-        totalpricewithdiscount = substract_float_digits_to_string(lst[1]) # Значение Итого на странице продукта
+        totalpricewithdiscount = float(substract_float_digits_to_string(lst[1])) # Значение Итого на странице продукта
 
         calculatedpricewithdiscount = round(totalpriceinbasket - totalpriceinbasket*discount/100, 2) #округляем рез-т до 2 знака
     
