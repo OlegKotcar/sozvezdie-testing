@@ -139,7 +139,7 @@ class TestBasketPage(object):
         page.open()
         
         # Проверим суммы в корзине
-    @pytest.mark.skip 
+    #@pytest.mark.skip 
     
     def test_calc_in_basket(self, browser, link): 
         def click_all_buttons(css_selector):
@@ -151,7 +151,13 @@ class TestBasketPage(object):
         def scroll_to_object(css_selector):
             scroll_object = browser.find_element_by_css_selector(css_selector)
             scroll_object.location_once_scrolled_into_view
-
+        def substract_digits_to_string(rawstring):
+            digit_list = re.findall(r'[0-9]+', rawstring)
+            result = ""
+            return (result.join(digit_list))
+            
+        
+        
 
 #-----------------------------------------in review
         page = BasePage(browser, link)
@@ -164,9 +170,14 @@ class TestBasketPage(object):
             lst.append(t.text)    
         totalprice=0
         for i in range(2, len(lst), 4) :
-            price = re.sub("\D", "", lst[i])
-                                    
-            #price = price[0:-1]
+            #print (f"Price before clean {lst[i]}")
+            #price = re.sub("\D", "", lst[i]) #Выдается предупреждение Deprecation Warning
+          
+            price = substract_digits_to_string(lst[i])
+            
+            #price = list_to_string(re.findall(r'[0-9]+', lst[i]))
+            #print (f"Price after clean {price}")
+
             totalprice+=int(price)
             #print(price)
         print("Total price = ",totalprice)
@@ -190,7 +201,8 @@ class TestBasketPage(object):
         totalpriceinbasket=0
         # Суммируем цены в корзине
         for i in range(3, len(lst), 5) :
-            price = re.sub("\D", "", lst[i])
+            #price = re.sub("\D", "", lst[i])  #Выдается предупреждение Deprecation Warning
+            price = substract_digits_to_string(lst[i])
             totalpriceinbasket+=int(price)
             #print(price)
  
@@ -223,7 +235,7 @@ class TestBasketPage(object):
         buttonlink = browser.find_element_by_css_selector("td a")
         buttonlink.click()
 
-        time.sleep(10)
+        time.sleep(40)
 
 
 
@@ -247,7 +259,7 @@ class TestProductPage(object):
         page = BasePage(browser, link)
         page.open()
         
-    #@pytest.mark.skip
+    @pytest.mark.skip
     def test_dates_on_product_pages1(self, browser, link):    
         
         lst=[]        
@@ -277,7 +289,7 @@ class TestProductPage(object):
         r = requests.get(url_img)
         assert r.status_code == 200, f"Неверная ссылка на изображение{url_img}"
     
-    #@pytest.mark.skip
+    @pytest.mark.skip
     def test_photoalbum_load_image_files(self, browser, link):    
       
         # Проверям что картинки загружаются
