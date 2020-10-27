@@ -1,4 +1,3 @@
-#Должен лежать в директории верхнего уровня в вашем проекте с тестами
 import pytest
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options

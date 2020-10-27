@@ -1,4 +1,5 @@
-import re
+from pages.base_page import BasePage
+
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
@@ -12,33 +13,10 @@ from locators import CatalogPageLocators
 from locators import ProductPageLocators
 
 
-import time, pytest, urllib, requests
+import time, pytest, urllib, requests, re
 
 # Exceptions
 from selenium.common.exceptions import NoSuchElementException
-
-
-class BasePage():
-    def __init__(self, browser: RemoteWebDriver, url, timeout=10):
-        #def __init__(self, browser, url):
-        self.browser = browser
-        self.url = url
-        self.browser.implicitly_wait(timeout)
-
-    def open(self):
-        self.browser.get(self.url)
-        
-    def is_element_present(self, how, what):
-        try:
-            self.browser.find_element(how, what)
-        except (NoSuchElementException):
-            return False
-        return True
-    def scroll_to_object(self, css_object):
-        self.browser.execute_script("return arguments[0].scrollIntoView(true);", css_object)
-        #time.sleep(10)
-        
-        
 
 
 
@@ -58,90 +36,12 @@ productlinks = []
 
 
 @pytest.mark.parametrize('cataloglink', ["http://185.10.185.115:7777/cat/"])
-class TestCatalogPage(object):
-    
-    #cataloglink = "http://185.10.185.115:7777/cat/"
-#---------------------------------------------------------
-    
-    @pytest.fixture(scope="function", autouse=True) # scope="class" "function"
-    def setup(self, browser, cataloglink):
-        page = BasePage(browser, cataloglink)
-        page.open()
-    
-
-    @pytest.mark.skip    
-    def test_catalog_product_url_opens(self, browser, cataloglink):  # проверям, что все ссылки на продукты со стр. каталога доступны
-        producturls=[]
-        
-        productlinks = browser.find_elements(*CatalogPageLocators.PRODUCT_DECK) 
-      
-        for link in productlinks:
-            producturls.append(link.get_attribute("href"))
-        for counter, url in enumerate(producturls):
-            if url == "":
-                    print(f"Нет ссылки на карточку продукта {counter}")
-            print(url)
-            r = requests.get(url)
-            if str(r.status_code) != "200":
-               print(f"Карточка с продуктом {url} недоступна")        
-
-
-    @pytest.mark.skip     
-    def test_catalog_product_title_exists (self, browser, cataloglink):  # проверям, что все ссылки на продукты со стр. каталога доступны
-        producturls=[]
-        productlinks = browser.find_elements(*CatalogPageLocators.PRODUCT_DECK)
-        for link in productlinks:
-            producturls.append(link.get_attribute("href"))
-        for url in producturls:
-           
-            # Заходим на страницу с продуктом, берем превью и проверяем его доступность
-            print("Идем в каталог")
-          
-            browser.implicitly_wait(10)
-            browser.get(cataloglink)
-
-            print(f"Открываем url {url}")
-            browser.implicitly_wait(10)
-            browser.get(url) 
-
-            title = browser.find_element(*ProductPageLocators.PRODUCT_TITLE).text # Ищем заголовок
-            print(title)
-            if  "404" in title:
-                print(f"Страница продукта {url} с наименованием {title} не отображает карточку продукта")
-
-#!!!
-    
-    @pytest.mark.skip    
-    def test_catalog_image_files_opens(self, browser, cataloglink):    
-        # Проверям что картинки загружаются
-        
-        
-        
-        url_imgs = browser.find_elements(*CatalogPageLocators.PRODUCT_IMAGE_URL)
-        assert len(url_imgs) != 0, "Нет ссылок на фото в каталоге!"        
-        for link in url_imgs:
-            imagelink = link.get_attribute("src")
-            if imagelink == None:
-                continue
-            r = requests.get(imagelink)
-            if r.status_code != 200:
-               print(f"Неверная ссылка на изображение, {imagelink}")
-
-    @pytest.mark.skip
-    def test_catalog_photo_duplication(self, browser, cataloglink):    
-        url_imgs = browser.find_elements(*CatalogPageLocators.PRODUCT_IMAGE_URL)
-        catduplications=[]
-        for link in url_imgs:
-            imagelink = link.get_attribute("src")
-            if imagelink in duplications:
-                print(f"Повтор изображения, {imagelink}")
-               
 
 
 #@pytest.mark.parametrize('link', [f"{product_base_link}/{no}" for no in range(100)])
 
 @pytest.mark.parametrize('link', ["http://185.10.185.115:7777/tour/0"])
-class TestBasketPage(object):
+class TestBasketPage(BasePage):
     @pytest.fixture(scope="function", autouse=True) # scope="class" "function"
     def setup(self, browser, link):
         browser.implicitly_wait(10)
@@ -335,7 +235,7 @@ class TestBasketPage(object):
         #time.sleep(15)
         
         #assert not WebDriverWait(browser, 5).until(EC.element_located_to_be_selected((By.XPATH, "//input [@id='cardName']/following-sibling::div[@class='invalid-feedback']"))), "Неверный ввод имени на карте"
-        time.sleep(10)
+        #time.sleep(10)
         
         cardnumber.clear()
         cardnumber.send_keys(u'\ue009' + u'\ue003')     
@@ -357,11 +257,7 @@ class TestBasketPage(object):
         
         time.sleep(5)
         
-        
-        
-        
-        
-        # проверять ошибки на is_element_present(visible)
+
     
     
     
@@ -383,7 +279,7 @@ class TestBasketPage(object):
 #@pytest.mark.parametrize('link', ["http://185.10.185.115:7777/tour/21", "http://185.10.185.115:7777/tour/25", "http://185.10.185.115:7777/tour/31", "http://185.10.185.115:7777/tour/33"])
 
 
-class TestProductPage(object):
+class TestProductPage(BasePage):
     @pytest.fixture(scope="function", autouse=True) # scope="class" "function"
     def setup(self, browser, link):
         page = BasePage(browser, link)
