@@ -18,14 +18,6 @@ class CatalogPage(BasePage):
         
         #assert self.is_element_present(*ProductPageLocators.PRODUCT_TITLE), f"Страница продукта {self.browser.current_url} не содержит заголовка"
        
-    def get_all_product_urls(self):
-        producturls=[]
-        productlinks = self.browser.find_elements(*CatalogPageLocators.PRODUCT_DECK) # Выбираем все ссылки в каталоге
-        for link in productlinks:
-            producturls.append(link.get_attribute("href"))    
-        return(producturls)
-
-
     def catalog_image_is_not_empty(self):    
         url_imgs = self.browser.find_elements(*CatalogPageLocators.PRODUCT_IMAGE_URL)
         if len(url_imgs) == 0:

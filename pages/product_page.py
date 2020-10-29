@@ -19,13 +19,28 @@ class ProductPage(BasePage):
             assert "404" not in title, f"Страница продукта {self.browser.current_url} с заголовком {title} не отображает карточку продукта"
         
         #assert self.is_element_present(*ProductPageLocators.PRODUCT_TITLE), f"Страница продукта {self.browser.current_url} не содержит заголовка"
-       
-    def get_all_product_urls(self):
-        producturls=[]
-        productlinks = self.browser.find_elements(*CatalogPageLocators.PRODUCT_DECK) # Выбираем все ссылки в каталоге
-        for link in productlinks:
-            producturls.append(link.get_attribute("href"))    
-        return(producturls)
+
+    def should_be_thumb_for_product (self):  # проверям, что все ссылки на продукты со стр. каталога доступны
+        result = True
+        if not self.is_element_present(*ProductPageLocators.PRODUCT_THUMBNAIL):
+            print(f"Страница продукта {self.browser.current_url} не содержит фото превью")
+            result = False
+        return(result)
+
+
+    def should_be_photoalbum_for_product (self):  # проверям, что все ссылки на продукты со стр. каталога доступны
+        result = True
+        if not self.is_element_present(*ProductPageLocators.PHOTO_GALLERY):
+            print(f"Страница продукта {self.browser.current_url} не содержит блока Фотоальбом")
+            result = False
+        return(result)
+
+    def should_be_route_for_product (self):  # проверям, что на странице есть маршрут
+        result = True
+        if not self.is_element_present(*ProductPageLocators.ROUTE):
+            print(f"Страница продукта {self.browser.current_url} не содержит блока маршрут")
+            result = False
+        return(result)
 
 
     def catalog_image_is_not_empty(self):    

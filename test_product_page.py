@@ -6,21 +6,17 @@ from pages.locators import BasePageLocators
 
 from datetime import datetime
 
-#datetime.datetime.strptime
-
-import pytest
+import pytest, requests
 
 class TestProductPage(object):
     #producturls=["http://185.10.185.115:7777/tour/0"]
-
-    
     
     @pytest.fixture(scope="function", autouse=True) # scope="class" "function"
     def setup(self, browser):
         page = ProductPage(browser, BasePageLocators.CATALOG_LINK)
         page.open()
         
-    #@pytest.mark.skip
+    @pytest.mark.skip
     def test_dates_on_product_pages(self, browser):    
         page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
         
@@ -31,89 +27,144 @@ class TestProductPage(object):
             browser.implicitly_wait(10)
             browser.execute_script(f"window.open('{link}')") # открываем новую вкладку с продуктом
             browser.switch_to.window(browser.window_handles[1]) # переходим на новую вкладку
-            
-            
+          
             # Тут все делаем на странице
-            
+
             lst=[]
-            contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)
-            
-            # Заготовка массива чтобы проверить даты и суммы
+            contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)  # Заготовка массива чтобы проверить даты и суммы
             for t in contents:
                 lst.append(t.text)
-            
             #print(lst)
-            
+
             for i in range(0, len(lst), 4) :
                 startdate = datetime.strptime(str(lst[i]), '%d.%m.%Y')
                 enddate = datetime.strptime(str(lst[i+1]), '%d.%m.%Y')
-                print(startdate, "---", enddate)
+                
+                #print(startdate, "---", enddate)
+                # Тут можно еще проверить относительно текущей даты
+                # datetime.now()
                 if startdate == enddate:
                     continue
-                assert startdate < enddate, "Неверные даты начала и конца тура"
-            
+                if startdate > enddate:
+                    print(f"Неверные даты начала {startdate} и конца тура {enddate}")
             
             browser.close() # закрываем _ВКЛАДКУ_
        
             #time.sleep(10)
             browser.switch_to.window(browser.window_handles[0]) # переключаемся на первую вкладку
-        
-        
-        
-                
-        
-        
-        
-           
+       
 
-        # Проверяем даты начала и конца туров
 
 
     @pytest.mark.skip
-    def test_check_photoalbum_load_images(self, browser, link):    
+    def test_product_thumbs(self, browser):    
+        
+        page = ProductPage(browser, BasePageLocators.CATALOG_LINK)
+        producturls = page.get_all_product_urls()
+        #print(producturls)
+
+        for link in producturls:
+            #print(f"Открываем вкладку с {link}")
+            browser.implicitly_wait(10)
+            browser.execute_script(f"window.open('{link}')") # открываем новую вкладку с продуктом
+            browser.switch_to.window(browser.window_handles[1]) # переходим на новую вкладку
+          
+            # Тут все делаем на странице    
+            
+            if not page.should_be_thumb_for_product(): # На странице продукта должно быть превью
+                browser.close()
+                browser.switch_to.window(browser.window_handles[0])
+                continue
+            else:
+                url_img = browser.find_element(*ProductPageLocators.PRODUCT_THUMBNAIL).get_attribute("src")
+                #print(url_img)
+                r = requests.get(url_img)
+                if r.status_code != 200:
+                    print(f"Неверная ссылка на изображение {url_img} в продукте со ссылкой {browser.current_url}")
+  
+
+  
+            browser.close() # закрываем _ВКЛАДКУ_
+            browser.switch_to.window(browser.window_handles[0]) # переключаемся на первую вкладку
      
-        # Проверям что картинки (превью) загружаются
-        url_img = browser.find_element(*ProductPageLocators.PRODUCT_THUMBNAIL).get_attribute("src")
-        #print(url_img)
-        r = requests.get(url_img)
-        assert r.status_code == 200, f"Неверная ссылка на изображение{url_img}"
+# Проверяем фотоальбом
+
     
     @pytest.mark.skip
-    def test_photoalbum_load_image_files(self, browser, link):    
-      
-        # Проверям что картинки загружаются
-        ##url_imgs = WebDriverWait(browser, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, "div.react-photo-gallery--gallery img")))
-        
-        url_imgs = browser.find_elements(*ProductPageLocators.PHOTO_GALLERY)
-        
-        assert len(url_imgs) != 0, f"Нет фотоальбома или фотографий в фотоальбоме, {browser.current_url}"        
-        
-        for link in url_imgs:
-            imagelink = link.get_attribute("src")
-            r = requests.get(imagelink)
-            assert r.status_code == 200, f"Неверная ссылка на изображение, {imagelink}, в фотоальбоме {browser.current_url}"
+    def test_photoalbum_load_image_files(self, browser):    
+        page = ProductPage(browser, BasePageLocators.CATALOG_LINK)
+        producturls = page.get_all_product_urls()
+        #print(producturls)
+
+        for link in producturls:
+            #print(f"Открываем вкладку с {link}")
+            browser.implicitly_wait(10)
+            browser.execute_script(f"window.open('{link}')") # открываем новую вкладку с продуктом
+            browser.switch_to.window(browser.window_handles[1]) # переходим на новую вкладку
+          
+            # Тут все делаем на странице    
+            
+            
+            if not page.should_be_photoalbum_for_product(): # На странице продукта должен быть фотоальбом
+                browser.close()
+                browser.switch_to.window(browser.window_handles[0])
+                continue
+            else:
+                url_imgs = browser.find_elements(*ProductPageLocators.PHOTO_GALLERY)
+                if len(url_imgs) > 0: 
+                    for url_img in url_imgs:
+                        imagelink = url_img.get_attribute("src")
+                        r = requests.get(imagelink)
+                        if r.status_code != 200:
+                             print(f"Неверная ссылка на изображение {imagelink} в Фотоальбоме продукта со ссылкой {browser.current_url}")
+                else:    
+                    print(f"Блок Фотоальбом есть, но нет фотографий в продукте {browser.current_url}")
+                #print(url_img)
+
+  
+            browser.close() # закрываем _ВКЛАДКУ_
+            browser.switch_to.window(browser.window_handles[0]) # переключаемся на первую вкладку
+
 
    
-    @pytest.mark.skip
-    def test_photoalbum_photo_files_duplication(self, browser, link):    
-        url_imgs = browser.find_elements(*ProductPageLocators.PHOTO_GALLERY)
-        assert len(url_imgs) != 0, f"Нет фотоальбома или фотографий в фотоальбоме, {browser.current_url}"        
-        route = browser.find_element(*ProductPageLocators.ROUTE)
-        route_list=route.text.replace(" ", "").split("-")
+    #@pytest.mark.skip
+    def test_photoalbum_photo_files_duplication(self, browser):    
+        page = ProductPage(browser, BasePageLocators.CATALOG_LINK)
+        producturls = page.get_all_product_urls()
+ 
+        duplications = dict()
+        routeduplicatons = dict()
 
-        for link in url_imgs:
-            imagelink = link.get_attribute("src")
-            if imagelink not in duplications:  # если url картинки нет в словаре то добавляем маршрут и ссылку на продук              
-                duplications[imagelink] = [browser.current_url]
-                routeduplicatons[imagelink] = route_list
-            else: # если url картинки уже есть, смотрим есть ли она в маршруте
-                result=list(set(route_list) & set(routeduplicatons[imagelink]))  # Смотрим пересечение обоих списков, если больше однго, то все ОК. Это может пригодиться в дальнейшем анализе маршрута. Можно применить set.intersection
+        for link in producturls:
+            #print(f"Открываем вкладку с {link}")
+            browser.implicitly_wait(10)
+            browser.execute_script(f"window.open('{link}')") # открываем новую вкладку с продуктом
+            browser.switch_to.window(browser.window_handles[1]) # переходим на новую вкладку
+          
+            # Тут все делаем на странице  
+            if not (page.should_be_photoalbum_for_product() and page.should_be_route_for_product): # На странице продукта должен быть фотоальбом и маршрут для этого теста
+                browser.close()
+                browser.switch_to.window(browser.window_handles[0])
+                continue
+            else:
+                route = browser.find_element(*ProductPageLocators.ROUTE)
+                route_list=route.text.replace(" ", "").split("-")
+                #print(route_list)
+                url_imgs = browser.find_elements(*ProductPageLocators.PHOTO_GALLERY)
+                for link in url_imgs:
+                    imagelink = link.get_attribute("src")
+                    if imagelink not in duplications:  # если url картинки нет в словаре то добавляем маршрут и ссылку на продук              
+                        duplications[imagelink] = [browser.current_url]
+                        routeduplicatons[imagelink] = route_list
+                    else: # если url картинки уже есть, смотрим есть ли она в маршруте
+                        result=list(set(route_list) & set(routeduplicatons[imagelink]))  # Смотрим пересечение обоих списков, если больше однго, то все ОК. Это может пригодиться в дальнейшем анализе маршрута. Можно применить set.intersection
                 
-                #print(result)
-                if len(result) >= 0:  #  Если есть совпадение, то идем к след. картинке
-                    continue
-                else: # если нет пересечений, то добавляем url продукта к картинке
-                    duplications[imagelink].append(browser.current_url)
+                        #print(result)
+                        if len(result) == 0:  #  Если совпадений нет, то добавляем дубликат
+                            duplications[imagelink].append(browser.current_url)
+
+            browser.close() # закрываем _ВКЛАДКУ_
+            browser.switch_to.window(browser.window_handles[0]) # переключаемся на первую вкладку
 
         # Печатаем все совпадения, если их больше 1 - картинка найдена на разных маршуртах более 1 раза
         #print(duplications)
@@ -121,4 +172,8 @@ class TestProductPage(object):
         for key, value in duplications.items():
             if len(value) > 1:
                 print(key, value)
+    
+        print("Проверка закончена") 
+
+
         

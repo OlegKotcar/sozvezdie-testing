@@ -18,7 +18,7 @@ class CatalogPageLocators():
 
 
 class ProductPageLocators():
-    PRODUCT_TITLE = (By.CSS_SELECTOR, "#page-content div h1") #Заголовок на странице продукта
+    PRODUCT_TITLE = (By.CSS_SELECTOR, "#page-content div h1") #Заголовок на странице продукта ! можно короче .col > h1
     PRODUCT_PRICE_AND_DATES_TABLE = (By.CSS_SELECTOR, "tr td")  #Таблица на странице продукта с датами и ценами
     BUY_BUTTONS = (By.CSS_SELECTOR, "button.btn") # Кнопки купить на странице продукта
     PRICE_TABLE = (By.CSS_SELECTOR, ".table.price-table") # Таблици с ценами для позиционирования
@@ -29,7 +29,7 @@ class ProductPageLocators():
     
 
 class BasketPageLocators():
-    Empty_basket_text = "Корзина пуста"
+    Empty_basket_text = "Корзина пуста" #review  - надо делать поддержку разных языков для текста пустой корзины, пока так.
     DELETE_BUTTONS = (By.CSS_SELECTOR, "button.btn.btn-outline-danger") # Кнопки удалить в корзине
     EMPTY_BASKET_TAG = (By.CSS_SELECTOR, "div.alert-info") # Сообщение о пустой корзине
     DISCOUNT_AND_PRICE = (By.CSS_SELECTOR, "tfoot tr td")
@@ -41,12 +41,15 @@ class BasketPageLocators():
     CARDHOLDER_FIELD = (By.CSS_SELECTOR, "#cardName")
     EXPDATE_FIELD = (By.CSS_SELECTOR, "#cardExpiry")
     CVCCODE_FIELD = (By.CSS_SELECTOR, "#cardCvc")
-    CARDNAMEERROR = (By.XPATH, "//input [@id='cardName']") # Неверное имя на карте
-    CARDNUMBERERROR = (By.XPATH, "//input [@id='cardNumber']")  # Неверный номер карты
-    EXPDATEERROR = (By.XPATH, "//input [@id='cardExpiry']") # Неверная дата окончания
-    CVCCODEERROR = (By.XPATH, "//input [@id='cardCvc']") # Неверный CVC код
 
 
+
+
+
+#    CARDNAMEERROR = (By.XPATH, "//input [@id='cardName']") # Неверное имя на карте
+#    CARDNUMBERERROR = (By.XPATH, "//input [@id='cardNumber']")  # Неверный номер карты
+#    EXPDATEERROR = (By.XPATH, "//input [@id='cardExpiry']") # Неверная дата окончания
+#    CVCCODEERROR = (By.XPATH, "//input [@id='cardCvc']") # Неверный CVC код
 
 #XPATH
 #//input [@id='cardName']/following-sibling::div[@class='invalid-feedback']") # Неверное имя на карте

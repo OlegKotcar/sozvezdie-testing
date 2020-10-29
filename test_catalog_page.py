@@ -16,7 +16,7 @@ class TestCatalogPage(object):
         page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
         page.open()
     
-    #@pytest.mark.skip 
+    @pytest.mark.skip 
     def test_catalog_image_files_exist_and_opens(self, browser):    
         page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
         
@@ -39,9 +39,10 @@ class TestCatalogPage(object):
 #        print(duplications)
 
 
-# Проверяем содержат ли продукты превью и правлиьные ли ссылки на них
+# Проверяем содержат ли продукты превью и правильные ли ссылки на них
         for counter, link in enumerate(preview_urls):
             imagelink = link.get_attribute("src")
+            
             if imagelink == None:
                  print(f"Продукт с порядковым номером {counter} не содержит картинки превью")
             else:
@@ -52,7 +53,7 @@ class TestCatalogPage(object):
 
 
     
-    @pytest.mark.skip 
+    #@pytest.mark.skip 
     #@pytest.mark.parametrize('link', link)    
     def test_open_product_url_in_new_bowser_window(self, browser):
         page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
