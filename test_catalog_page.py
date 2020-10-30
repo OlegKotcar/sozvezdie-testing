@@ -107,15 +107,12 @@ class TestCatalogPage(object):
         page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
         page.open()
 
-  
         producturls=[]
         productlinks = browser.find_elements(*CatalogPageLocators.PRODUCT_DECK) # Выбираем все ссылки в каталоге
+
         for link in productlinks:
             producturls.append(link.get_attribute("href"))
         
-        #print(producturls)
-
-     
         for counter, url in enumerate(producturls):
             if url == "":
                     print(f"Нет ссылки на карточку продукта {counter}")

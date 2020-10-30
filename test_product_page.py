@@ -26,9 +26,7 @@ class TestProductPage(object):
         
         preview_dates = [catalog_product_dates[x].text for x in range (0, len(catalog_product_dates))]
         #print(preview_dates)
-        
-       
-        #print(producturls)
+
         for numproduct, link in enumerate(producturls):
             #print(f"Открываем вкладку с {link}")
             browser.implicitly_wait(10)
@@ -62,7 +60,7 @@ class TestProductPage(object):
                 earliestdate = (page.convert_string_to_date(min(allstartdates))) 
             else:
                 earliestdate = ""  
-            print(earliestdate)
+            #print(earliestdate)
              
             for i in range(0, len(allstartdates)):
                 startdate = page.convert_string_to_date(allstartdates[i])
