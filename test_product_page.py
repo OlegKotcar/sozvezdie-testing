@@ -126,7 +126,6 @@ class TestProductPage(object):
         #print(producturls)
 
         for link in producturls:
-            #print(f"Открываем вкладку с {link}")
             browser.implicitly_wait(10)
             browser.execute_script(f"window.open('{link}')") # открываем новую вкладку с продуктом
             browser.switch_to.window(browser.window_handles[1]) # переходим на новую вкладку
@@ -202,7 +201,7 @@ class TestProductPage(object):
             if len(value) > 1:
                 print(key, value)
     
-        print("Проверка закончена") 
+        #print("Проверка закончена") 
 
 
         
