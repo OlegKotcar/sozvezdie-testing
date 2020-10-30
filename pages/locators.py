@@ -5,6 +5,8 @@ class BasePageLocators():
     MAIN_LINK = "http://185.10.185.115:7777/"
     CATALOG_LINK = "http://185.10.185.115:7777/cat"
     BASKET_LINK = "http://185.10.185.115:7777/cart"
+    DATE_CONVERT_TEMPLATE = "%d.%m.%Y"
+    DATE_SPLIT_SYMBOL = "-"
     #CATALOG_LINK = (By.find_element_by_partial_link_text, "cat")
     #BASKET_LINK = (By.find_element_by_partial_link_text, "cart")
     #PRODUCT_IMAGE_URL = (By.CSS_SELECTOR, "div.catalog.card-deck img") #Ссылки на изображения (превью) всех продуктов в каталоге
@@ -15,6 +17,12 @@ class CatalogPageLocators():
     PRODUCT_DECK = (By.CSS_SELECTOR,".catalog.card-deck a") # Ссылки на все продукты со страницы каталога
     PRODUCT_IMAGE_URL = (By.CSS_SELECTOR, "div.catalog.card-deck img") #Ссылки на изображения (превью) всех продуктов в каталоге
     PRODUCT_PREVIEW = (By.CSS_SELECTOR, ".card-img-top") #блок для картинки превью в каталоге
+    PRODUCT_DATE = (By.XPATH, "//div[@class='list-group-item'][1]/strong") # поле с ближайшей датой
+    
+    
+    
+    
+    
 
 
 class ProductPageLocators():
@@ -26,13 +34,20 @@ class ProductPageLocators():
     PRODUCT_THUMBNAIL = (By.CSS_SELECTOR, "div>img.photo-card") # Ссылка на превью на станице продукта
     PHOTO_GALLERY = (By.CSS_SELECTOR, "div.react-photo-gallery--gallery img")
     ROUTE = (By.XPATH, "//div[@class='text-center']/p") # Текст маршрута на странице продукта
+    PRODUCT_START_DATE_COLUMN = (By.XPATH, "//tbody/tr/td[1]") # Выбирает столбец всех дат начала туров
+    PRODUCT_END_DATE_COLUMN = (By.XPATH, "//tbody/tr/td[2]") # Выбирает столбец всех дат окончания туров
+    PRODUCT_PRICE_COLUMN = (By.XPATH, "//tbody/tr/td[3]") # Выбирает столбец всех сумм
     
+    
+    
+
 
 class BasketPageLocators():
     Empty_basket_text = "Корзина пуста" #review  - надо делать поддержку разных языков для текста пустой корзины, пока так.
     DELETE_BUTTONS = (By.CSS_SELECTOR, "button.btn.btn-outline-danger") # Кнопки удалить в корзине
     EMPTY_BASKET_TAG = (By.CSS_SELECTOR, "div.alert-info") # Сообщение о пустой корзине
-    DISCOUNT_AND_PRICE = (By.CSS_SELECTOR, "tfoot tr td")
+    DISCOUNT = (By.XPATH, "//tfoot/tr[1]/td")  # Поле с размером скидки
+    TOTALPRICE = (By.XPATH, "//tfoot/tr[2]/td")
     PAYBUTTON = (By.XPATH, "//*[@type='submit']") # кнопка оплатить
     NAME_FIELD = (By.CSS_SELECTOR, "#name")
     EMAIL_FIELD = (By.CSS_SELECTOR, "#email")
@@ -41,6 +56,8 @@ class BasketPageLocators():
     CARDHOLDER_FIELD = (By.CSS_SELECTOR, "#cardName")
     EXPDATE_FIELD = (By.CSS_SELECTOR, "#cardExpiry")
     CVCCODE_FIELD = (By.CSS_SELECTOR, "#cardCvc")
+    PRODUCT_PRICE_BASKET_COLUMN = (By.XPATH, "//tbody/tr/td[4]") # Выбирает столбец всех сумм в корзине
+    
 
 
 

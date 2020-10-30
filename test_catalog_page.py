@@ -3,7 +3,7 @@ from pages.locators import CatalogPageLocators
 from pages.locators import BasePageLocators
 
 import time, pytest, requests
-
+from datetime import datetime
 
 
 
@@ -15,6 +15,34 @@ class TestCatalogPage(object):
     def setup(self, browser):
         page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
         page.open()
+
+
+    #@pytest.mark.skip 
+    def test_dates_on_catalog_page(self, browser):    
+        page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
+        producturls = page.get_all_product_urls()
+        product_dict = {x : producturls[x] for x in range (0, len(producturls))}
+        preview_dates = browser.find_elements(*CatalogPageLocators.PRODUCT_DATE)        
+        
+        for numproduct in range (0, len(producturls)):
+            preview_dates_range = preview_dates[numproduct].text.split(BasePageLocators.DATE_SPLIT_SYMBOL)
+            if preview_dates_range[0] == '':
+                print(f"Для продукта {product_dict[numproduct]} нет ближайших дат его начала")
+                continue 
+            nowdate = datetime.now().date()            
+            startdate = page.convert_string_to_date(preview_dates_range[0])
+            enddate = page.convert_string_to_date(preview_dates_range[1])
+            
+            #print(f"{startdate} - {enddate}")
+            if startdate > enddate:
+                print(f"Для продукта {product_dict[numproduct]} неверные даты начала {startdate} и конца тура {enddate}")
+            
+            if startdate < nowdate:
+                print(f"Для продукта {product_dict[numproduct]} начало тура {startdate} позднее текущей даты {nowdate}")            
+
+        
+
+
     
     @pytest.mark.skip 
     def test_catalog_image_files_exist_and_opens(self, browser):    
@@ -25,7 +53,7 @@ class TestCatalogPage(object):
         page.catalog_image_is_not_empty()
         preview_urls = browser.find_elements(*CatalogPageLocators.PRODUCT_PREVIEW)
 
-# Проверяем есть ли дубликаты картинок на разных продуктах
+      # Проверяем есть ли дубликаты картинок на разных продуктах
         for counter, link in enumerate(preview_urls):
             imagelink = link.get_attribute("src")        
             if imagelink not in duplications:
@@ -36,10 +64,7 @@ class TestCatalogPage(object):
             if len(value) > 1:
                 print(f"Изображение {key}, повторяется в продуктах с порядковыми номерами {value}")       
 
-#        print(duplications)
-
-
-# Проверяем содержат ли продукты превью и правильные ли ссылки на них
+         # Проверяем содержат ли продукты превью и правильные ли ссылки на них
         for counter, link in enumerate(preview_urls):
             imagelink = link.get_attribute("src")
             
@@ -53,7 +78,7 @@ class TestCatalogPage(object):
 
 
     
-    #@pytest.mark.skip 
+    @pytest.mark.skip 
     #@pytest.mark.parametrize('link', link)    
     def test_open_product_url_in_new_bowser_window(self, browser):
         page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
@@ -62,8 +87,7 @@ class TestCatalogPage(object):
         producturls = page.get_all_product_urls()
         
         #producturls=["http://185.10.185.115:7777/tour/0", "http://185.10.185.115:7777/tour/98", "http://185.10.185.115:7777/tour/99"]
-
-        #print(producturls)
+        print(producturls)
         
         for link in producturls:
             #print(f"Открываем вкладку с {link}")

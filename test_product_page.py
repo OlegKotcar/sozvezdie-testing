@@ -3,6 +3,7 @@ from pages.catalog_page import CatalogPage
 
 from pages.locators import ProductPageLocators
 from pages.locators import BasePageLocators
+from pages.locators import CatalogPageLocators
 
 from datetime import datetime
 
@@ -16,40 +17,70 @@ class TestProductPage(object):
         page = ProductPage(browser, BasePageLocators.CATALOG_LINK)
         page.open()
         
-    @pytest.mark.skip
+    #@pytest.mark.skip
     def test_dates_on_product_pages(self, browser):    
-        page = CatalogPage(browser, BasePageLocators.CATALOG_LINK)
+        page = ProductPage(browser, BasePageLocators.CATALOG_LINK)
         
         producturls = page.get_all_product_urls()
+        catalog_product_dates = browser.find_elements(*CatalogPageLocators.PRODUCT_DATE)
+        
+        preview_dates = [catalog_product_dates[x].text for x in range (0, len(catalog_product_dates))]
+        #print(preview_dates)
+        
+       
         #print(producturls)
-        for link in producturls:
+        for numproduct, link in enumerate(producturls):
             #print(f"Открываем вкладку с {link}")
             browser.implicitly_wait(10)
             browser.execute_script(f"window.open('{link}')") # открываем новую вкладку с продуктом
             browser.switch_to.window(browser.window_handles[1]) # переходим на новую вкладку
-          
+
             # Тут все делаем на странице
+            
+            preview_dates_range = preview_dates[numproduct].split(BasePageLocators.DATE_SPLIT_SYMBOL)
+            #print(preview_dates_range)
+            
+            if preview_dates_range[0] == '':
+                print(f"Для продукта {link} на странице каталога нет ближайших дат его начала")
+                startdateincatalog = ''
+                enddateincatalog = ''
+            else:
+                startdateincatalog = page.convert_string_to_date(preview_dates_range[0])
+                enddateincatalog = page.convert_string_to_date(preview_dates_range[1])
+            
+            if not page.should_be_price_date_for_product():
+                print(f"страница продукта {link} не содержит блока дат и цен")
 
-            lst=[]
-            contents = browser.find_elements(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE)  # Заготовка массива чтобы проверить даты и суммы
-            for t in contents:
-                lst.append(t.text)
-            #print(lst)
+            startdateselement = browser.find_elements(*ProductPageLocators.PRODUCT_START_DATE_COLUMN) 
+            enddateselement = browser.find_elements(*ProductPageLocators.PRODUCT_END_DATE_COLUMN) 
 
-            for i in range(0, len(lst), 4) :
-                startdate = datetime.strptime(str(lst[i]), '%d.%m.%Y')
-                enddate = datetime.strptime(str(lst[i+1]), '%d.%m.%Y')
-                
-                #print(startdate, "---", enddate)
-                # Тут можно еще проверить относительно текущей даты
-                # datetime.now()
-                if startdate == enddate:
-                    continue
+            allstartdates = [startdateselement[x].text for x in range (len(startdateselement))]
+            allenddates = [enddateselement[x].text for x in range (len(enddateselement))]
+            nowdate = datetime.now().date()
+            
+            if len(allstartdates) > 0:
+                earliestdate = (page.convert_string_to_date(min(allstartdates))) 
+            else:
+                earliestdate = ""  
+            print(earliestdate)
+             
+            for i in range(0, len(allstartdates)):
+                startdate = page.convert_string_to_date(allstartdates[i])
+                enddate = page.convert_string_to_date(allenddates[i])
+            # Сразу проверяем совпадает ли ближайшая дата с датой в каталоге (список отсортирован)
+                if i ==0 and startdateincatalog != earliestdate:
+                    print(f"В каталоге для продукта {link}  указана ближайшая дата {startdateincatalog}, ближайшая дата на стр. {earliestdate}") 
+            # Дальше проверяем на начало < конца и текущую дату
+                if startdate < nowdate:            
+                    print(f"На странице продукта {link} начало тура {startdate} позднее текущей даты {nowdate}") 
+
+#                if startdate == enddate:
+#                    continue    # тут аккуратно, надо не забывать про открытые вкладки
+
                 if startdate > enddate:
                     print(f"Неверные даты начала {startdate} и конца тура {enddate}")
-            
+  
             browser.close() # закрываем _ВКЛАДКУ_
-       
             #time.sleep(10)
             browser.switch_to.window(browser.window_handles[0]) # переключаемся на первую вкладку
        
@@ -127,7 +158,7 @@ class TestProductPage(object):
 
 
    
-    #@pytest.mark.skip
+    @pytest.mark.skip
     def test_photoalbum_photo_files_duplication(self, browser):    
         page = ProductPage(browser, BasePageLocators.CATALOG_LINK)
         producturls = page.get_all_product_urls()

@@ -14,7 +14,8 @@ class BasketPage(BasePage):
         result = ""
         return (result.join(digit_list))
     
-    def substract_float_digits_to_string(self, rawstring):
+    def substract_float_digits_to_string(self, rawstring): 
+        #re.sub("\D", "", lst[i]) #Выдается предупреждение Deprecation Warning
         digit_list = re.findall(r'[0-9.,]+', rawstring)
         result = ""
         return (result.join(digit_list).replace(",","."))   

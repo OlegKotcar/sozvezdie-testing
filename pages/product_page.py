@@ -8,7 +8,11 @@ import time, pytest
 
 class ProductPage(BasePage):
     
-   
+    def should_be_price_date_for_product (self):  # проверям, что все блок с датами и ценами есть на странице
+        result = True
+        if not self.is_element_present(*ProductPageLocators.PRODUCT_PRICE_AND_DATES_TABLE):
+            result = False
+        return(result)
  
     def should_be_title_for_product (self):  # проверям, что все ссылки на продукты со стр. каталога доступны
         if not self.is_element_present(*ProductPageLocators.PRODUCT_TITLE):

@@ -9,6 +9,8 @@ from selenium.common.exceptions import TimeoutException
 from pages.locators import CatalogPageLocators
 from pages.locators import BasePageLocators
 
+from datetime import datetime
+
 
 class BasePage():
     def __init__(self, browser: RemoteWebDriver, url, timeout=10):
@@ -55,7 +57,11 @@ class BasePage():
         for link in productlinks:
             producturls.append(link.get_attribute("href"))    
         return(producturls)    
-      
+   
+    def convert_string_to_date(self, rawstring):
+        result = datetime.strptime(rawstring,BasePageLocators.DATE_CONVERT_TEMPLATE).date()
+        return result
+   
    
         
     def click_all_buttons(self, how, what):
