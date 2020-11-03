@@ -3,43 +3,70 @@ import json
 import urllib.request, requests, time
 from datetime import datetime
 
-"""
-{
-description:	
-Детальная информация по предложению
 
-id*	integer($int64)
-Идентификатор
 
-title	string
-Название
+producturl = "http://185.10.185.115:7777/tour/"
+productAPIURL = "http://185.10.185.115:7777/api/tour/"
+orderURL = "http://185.10.185.115:7777/api/Order"
 
-header	string
-Заголовок
+#PARAMS = {'status':404} 
+#r = requests.get(url = "http://185.10.185.115:7777/api/tour/0", params = PARAMS) 
+#data = r.json() 
 
-description	string
-Описание
 
-route	[...]
-periodStart*	string($date-time)
-Начало ближайшего периода
 
-periodEnd*	string($date-time)
-Окончание ближайшего периода
-
-minPrice*	number($double)
-Минимальная цена
-
-photoCard	PhotoCard{...}
-photoAlbum	[...]
-prices	[...]
+payload = {
+  "items": [
+    {
+      "tourId": 0,
+      "start": "2020-11-03T02:42:47.419Z",
+      "price": 0
+    }
+  ],
+  "total": 0,
+  "registration": {
+    "name": "string",
+    "email": "string",
+    "password": "string",
+    "cardNumber": "string",
+    "cardName": "string",
+    "cardExpiry": "string",
+    "cardCvc": "string"
+  }
 }
-"""
 
-producturl="http://185.10.185.115:7777/tour/"
+payloadError = {
+  "items": [
+    {
+      "tourId": 0,
+      "start": "2020-11-03T02:42:47.419Z",
+      "price": 0
+    }
+  ],
+  "total": 0,
+  "registration": {
+    "name": "string",
+
+  }
+}
 
 
-with urllib.request.urlopen("http://185.10.185.115:7777/api/tour") as url:
+payloadOK = {"items": [{"tourId": 0, "start": "2020-11-03T02:42:47.419Z", "price": 0}], "total": 0, "registration": {"name": "User Name", "email": "111@111.com", "password": "1qaz2wsx", "cardNumber": "1111222233334444", "cardName": "User Name","cardExpiry": "10/22","cardCvc": "111"}}
+
+payloadErrorExpDate = {"items": [{"tourId": 0, "start": "2020-11-03T02:42:47.419Z", "price": 0}], "total": 0, "registration": {"name": "User Name", "email": "111@111.com", "password": "1qaz2wsx", "cardNumber": "1111222233334444", "cardName": "User Name","cardExpiry": "10/12","cardCvc": "111"}}
+
+
+# Пробуем покупку - проходят любые значения, главное совпадение данных
+r = requests.post(orderURL, json = payloadOK)
+print(f"Пробуем купить  - ответ сервера {r.status_code}")
+
+
+
+
+
+
+
+with urllib.request.urlopen(productAPIURL) as url:
     data = json.loads(url.read().decode())
 #    print(data)
 
@@ -51,19 +78,38 @@ def find_duplicates(lst, item):
 def string_to_date(rawString):  
     return (datetime.strptime(rawString, "%Y-%m-%dT%H:%M:%S%z"))
 
-
-
-# Заполнили массив описаниями
+# Проверяем доступность API туров по id
+print('Проверяем доступность API туров по id')
 for key in range (len(data)):
-    descriptons.append(data[key]["description"])
+    r = requests.head(f"{productAPIURL}{key}")
+    if r.status_code != 200:
+        print(f"{productAPIURL}{key}  - Страница недоступна")
+        continue
+    else:  
+    # если url существует, пробуем его открыть
+        r = requests.get(f"{productAPIURL}{key}")
+        #data = r.json() 
+        if r.status_code != 200:
+            print(f"Страница {productAPIURL}{key} имеет статус ошибки {r.status_code}, но в каталоге присутствует")
+            continue
+        else:
+            print(f"API {productAPIURL}{key} отдает JSON")        
+            pass
+            
+            
+
 
 # Проверяем полное совпадение текста в разных продуктах
+for key in range (len(data)):
+    descriptons.append(data[key]["description"])
 for key in range(len(descriptons)):
     doublelist = (find_duplicates(descriptons, descriptons[key]))
     if key in doublelist: # убираем ссылку на самого себя
         doublelist.remove(key)
     print (f"Описание для тура {producturl}{key} полностью повторяется в турах с id={doublelist}")
 # id потом можно привязать к конечным url
+
+
 
 # Проверим даты
 for key in range (len(data)):
@@ -124,26 +170,6 @@ for key in range (len(data)):
             print(f"Мин. цена в каталоге и на карточке продукта {producturl}{key} все ОК")
     
     
-    
-    #startDates = (data[key]["prices"])#.get("start")
-    #endDates = (data[key]["prices"])#.get("end")
-    #print(startDates,endDates)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #---------------------------------------------------------------------------------------
 
 print("--------------------Проверяем превью и фото продуктов----------------------------")
@@ -201,43 +227,61 @@ for key in range (len(data)):
                     print(f"В фотоальбоме продукта {producturl}{key} неверная ссылка на фото, {photourl} ")
 
 
+"""
+{
+description:	
+Детальная информация по предложению
 
+id*	integer($int64)
+Идентификатор
 
+title	string
+Название
 
+header	string
+Заголовок
 
+description	string
+Описание
 
+route	[...]
+periodStart*	string($date-time)
+Начало ближайшего периода
 
+periodEnd*	string($date-time)
+Окончание ближайшего периода
 
+minPrice*	number($double)
+Минимальная цена
 
+photoCard	PhotoCard{...}
+photoAlbum	[...]
+prices	[...]
+}
+
+--------------------------------------------------
+Заказ
+
+{
+  "items": [
+    {
+      "tourId": 0,
+      "start": "2020-11-03T02:42:47.419Z",
+      "price": 0
+    }
+  ],
+  "total": 0,
+  "registration": {
+    "name": "string",
+    "email": "string",
+    "password": "string",
+    "cardNumber": "string",
+    "cardName": "string",
+    "cardExpiry": "string",
+    "cardCvc": "string"
+  }
+}
 
 """
-    # проверяем доступность url для превью продукта
-    if thumburl == "": 
-        print(f"в продукте {producturl}{key} отсутствует ссылка на превью")
-    else:
-        r = requests.get(thumburl)
-        if r.status_code != 200:
-            print(f"На странице продукта {producturl}{key} неверная ссылка на превью, {thumburl} ")
-
-    # проверяем доступность url для фото продукта
-    if photourl == "": 
-        print(f"в продукте {producturl}{key} отсутствует ссылка на фото")
-    else:
-        r = requests.get(photourl)
-        if r.status_code != 200:
-            print(f"На странице продукта {producturl}{key} неверная ссылка на фото, {photourl} ")     
-
-"""
-
-
-
-
-
-
-
-
-
-
-
 
 
